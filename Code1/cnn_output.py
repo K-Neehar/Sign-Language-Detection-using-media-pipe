@@ -5,18 +5,12 @@ import numpy as np
 import warnings
 import os
 import tensorflow as tf
-from sklearn.preprocessing import LabelEncoder
 
 warnings.simplefilter("ignore")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow warnings
 
 # Load trained model
-model = tf.keras.models.load_model('sign_language_model.h5')
-
-# Load label encoder
-with open('label_encoder.p', 'rb') as f:
-    label_encoder = pickle.load(f)
-classes = label_encoder.classes_  # Get class labels
+model = tf.keras.models.load_model('./sign_language_model.h5')
 
 cap = cv2.VideoCapture(0)
 
@@ -24,6 +18,9 @@ mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
+
+# Ensure labels_dict matches model training
+labels_dict = {0: 'Hello!', 1: 'Stop!', 2: 'Good luck!', 3: 'Nice!'}
 
 while True:
     data_aux = []
@@ -38,8 +35,8 @@ while True:
 
     H, W, _ = frame.shape
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(frame_rgb)
 
+    results = hands.process(frame_rgb)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(
@@ -54,6 +51,7 @@ while True:
             for i in range(len(hand_landmarks.landmark)):
                 x = hand_landmarks.landmark[i].x
                 y = hand_landmarks.landmark[i].y
+
                 x_.append(x)
                 y_.append(y)
 
@@ -70,12 +68,12 @@ while True:
         # Make prediction
         prediction = model.predict(input_data)
         predicted_label = np.argmax(prediction)
-        predicted_character = classes[predicted_label]
+        predicted_character = labels_dict.get(predicted_label, "Unknown")
 
-        # # Debugging output
-        # print("Raw prediction probabilities:", prediction)
-        # print("Predicted index:", predicted_label)
-        # print("Mapped label:", predicted_character)
+        # Debugging output
+        print("Raw prediction probabilities:", prediction)
+        print("Predicted index:", predicted_label)
+        print("Mapped label:", predicted_character)
 
         x1 = int(min(x_) * W) - 10
         y1 = int(min(y_) * H) - 10

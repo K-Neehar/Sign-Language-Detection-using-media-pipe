@@ -1,48 +1,34 @@
 import os
 import pickle
-import cv2
 import mediapipe as mp
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
+import cv2
 
-# Initialize Mediapipe
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
 
-# Dataset directory
-DATA_DIR = './isl_dataset'
-EXPECTED_FEATURES = 42  # 21 landmarks * 2 (x, y)
-
+DATA_DIR = './data'
 data = []
 labels = []
 
-# Process dataset
 for dir_ in os.listdir(DATA_DIR):
     dir_path = os.path.join(DATA_DIR, dir_)
-    if not os.path.isdir(dir_path):  # Skip files
+    if not os.path.isdir(dir_path):  # ✅ Skip non-directory files
         continue
-
-    print(f"📂 Processing folder: {dir_}...")  # ✅ Folder processing message
-
-    folder_data_count = 0  # Track processed images per folder
-
+    
     for img_path in os.listdir(dir_path):
         img = cv2.imread(os.path.join(dir_path, img_path))
-
-        if img is None:
+        
+        if img is None:  # ✅ Handle unreadable images
             print(f"⚠️ Failed to load: {img_path} in {dir_}")
             continue
 
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         results = hands.process(img_rgb)
 
-        if not results.multi_hand_landmarks:
+        if not results.multi_hand_landmarks:  # ✅ Handle no hand detection
             print(f"⚠️ No hands detected in: {img_path}")
             continue
-
+        
         data_aux = []
         x_ = []
         y_ = []
@@ -60,21 +46,11 @@ for dir_ in os.listdir(DATA_DIR):
                 data_aux.append(x - min(x_))
                 data_aux.append(y - min(y_))
 
-        # Ensure uniform shape
-        if len(data_aux) < EXPECTED_FEATURES:
-            data_aux.extend([0] * (EXPECTED_FEATURES - len(data_aux)))
-        elif len(data_aux) > EXPECTED_FEATURES:
-            data_aux = data_aux[:EXPECTED_FEATURES]
-
         data.append(data_aux)
-        labels.append(dir_)  # Use folder name as label
-        folder_data_count += 1
+        labels.append(dir_)
 
-    print(f"✅ Completed folder: {dir_} ({folder_data_count} images processed)\n")  # ✅ Completion message
+print(f"✅ Total samples collected: {len(data)}")
 
-# Save dataset
 with open('data.pickle', 'wb') as f:
     pickle.dump({'data': data, 'labels': labels}, f)
-
-print("🎯 Dataset processing completed!")
-print("✅ Dataset saved as 'data.pickle'.")
+print("✅ Dataset successfully saved as 'data.pickle'.")

@@ -7,7 +7,7 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-# Load dataset
+# Load data
 with open('data.pickle', 'rb') as f:
     data_dict = pickle.load(f)
 
@@ -53,7 +53,4 @@ model.fit(x_train, y_train, epochs=20, batch_size=32, validation_data=(x_test, y
 
 # Save model
 model.save('sign_language_model.h5')
-with open('label_encoder.p', 'wb') as f:
-    pickle.dump(label_encoder, f)
-
 print("✅ Model saved as 'sign_language_model.h5'!")
