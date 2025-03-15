@@ -41,6 +41,9 @@ while True:
     results = hands.process(frame_rgb)
 
     if results.multi_hand_landmarks:
+        num_hands = len(results.multi_hand_landmarks)
+        print(f"✅ {num_hands} hand(s) detected!")  # Debugging
+
         for hand_landmarks in results.multi_hand_landmarks:
             mp_drawing.draw_landmarks(
                 frame,
@@ -63,19 +66,18 @@ while True:
                 data_aux.append(x - min(x_))
                 data_aux.append(y - min(y_))
 
+        # Ensure consistent input size (84 values for two hands, 42 for one hand)
+        if num_hands == 1:
+            data_aux += [0] * (84 - 42)  # Pad with zeros if only one hand is detected
+
         # Normalize input
         data_aux = np.array(data_aux) / np.max(data_aux)
-        input_data = data_aux.reshape(1, 21, 2, 1)
+        input_data = data_aux.reshape(1, 42, 2, 1)  # Expecting (42, 2, 1)
 
         # Make prediction
         prediction = model.predict(input_data)
         predicted_label = np.argmax(prediction)
         predicted_character = classes[predicted_label]
-
-        # # Debugging output
-        # print("Raw prediction probabilities:", prediction)
-        # print("Predicted index:", predicted_label)
-        # print("Mapped label:", predicted_character)
 
         x1 = int(min(x_) * W) - 10
         y1 = int(min(y_) * H) - 10

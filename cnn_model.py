@@ -21,8 +21,8 @@ labels = label_encoder.fit_transform(labels)
 # Convert labels to categorical (one-hot encoding)
 labels = to_categorical(labels)
 
-# Reshape data for CNN (Assuming 21 hand landmarks with x & y coordinates)
-data = np.array(data).reshape(-1, 21, 2, 1)  # (samples, landmarks, coordinates, channels)
+# Reshape data for CNN (42 landmarks per hand, 2 coordinates each)
+data = np.array(data).reshape(-1, 42, 2, 1)  # (samples, landmarks, coordinates, channels)
 
 # Split dataset
 x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, stratify=labels)
@@ -33,7 +33,7 @@ x_test = x_test / np.max(x_test)
 
 # Define CNN model
 model = Sequential([
-    Conv2D(32, (3, 1), activation='relu', input_shape=(21, 2, 1)),
+    Conv2D(32, (3, 1), activation='relu', input_shape=(42, 2, 1)),  # Expecting 42 landmarks
     MaxPooling2D((2, 1)),
     
     Conv2D(64, (3, 1), activation='relu'),
