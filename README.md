@@ -38,9 +38,6 @@ pip install -r requirements.txt
    python inference_classifier.py
    ```
 
-## 🎥 Demo
-[![Watch the video](https://img.youtube.com/vi/MJCSjXepaAM/0.jpg)](https://www.youtube.com/watch?v=MJCSjXepaAM)
-
 ## 📝 Notes
 - Ensure your **webcam** is connected for real-time detection.
 - If the model predicts an unknown label, update `labels_dict` accordingly in `inference_classifier.py`.
